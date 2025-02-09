@@ -27,8 +27,9 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _initializeChat() async {
     try {
       final args = ModalRoute.of(context)?.settings.arguments as Chatroom?;
-      if (args == null)
+      if (args == null) {
         throw Exception("No chatroom data passed to ChatScreen.");
+      }
 
       debugPrint("Chatroom data: ${args.toString()}");
 
@@ -43,11 +44,20 @@ class _ChatScreenState extends State<ChatScreen> {
 
       // Listen for messages
       debugPrint("Listening for messages...");
-      _socketService.listenToMessages((msg) {
+      _socketService.listenToMessages((msg) async {
         debugPrint("Received message: $msg");
 
         // Validate the message belongs to the current chatroom
         if (msg['chatroomId'] == _chatroom.id) {
+          final currentUser =
+              await _userService.getUserProfile(); // Fetch the current user
+
+          // Ignore messages sent by the current user to avoid duplication
+          if (msg['senderId'] == currentUser.id) {
+            debugPrint("Ignoring self-sent message.");
+            return;
+          }
+
           debugPrint("Message belongs to current chatroom. Adding to UI.");
 
           setState(() {
@@ -59,13 +69,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
           debugPrint("Updated messages: $_messages");
         } else {
-          debugPrint("Message does not belong to the current chatroom. Ignoring.");
+          debugPrint(
+              "Message does not belong to the current chatroom. Ignoring.");
         }
       });
     } catch (error) {
       debugPrint("Error initializing chat: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to load chatroom data.")),
+        const SnackBar(content: Text("Failed to load chatroom data.")),
       );
     }
   }
@@ -95,13 +106,14 @@ class _ChatScreenState extends State<ChatScreen> {
       final participants = _chatroom.participants;
 
       // Emit the message to all participants
-      _socketService.sendMessageToAll(participants, _chatroom.id, currentUser.id, content);
+      _socketService.sendMessageToAll(
+          participants, _chatroom.id, currentUser.id, content);
 
       debugPrint("Message sent to server: $content");
     } catch (error) {
       debugPrint("Error sending message: $error");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to send the message.")),
+        const SnackBar(content: Text("Failed to send the message.")),
       );
     }
   }

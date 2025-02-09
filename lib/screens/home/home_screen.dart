@@ -6,6 +6,8 @@ import '../../services/chat_service.dart';
 import '../../services/user_service.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -99,3 +101,5 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+

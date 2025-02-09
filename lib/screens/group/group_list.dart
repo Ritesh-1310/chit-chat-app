@@ -6,11 +6,13 @@ class GroupList extends StatelessWidget {
     {'name': 'Family', 'image': 'https://via.placeholder.com/150'},
   ];
 
+  GroupList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Groups'),
+        title: const Text('Groups'),
       ),
       body: ListView.builder(
         itemCount: groups.length,
